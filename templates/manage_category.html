@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<br>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-1 col-md-2"></div>
+        <div class="col-sm-10 col-md-8">
+            <form method="POST">
+                {{ category_form.csrf_token }}
+                <div class="form-group">
+                    <h2>Manage Category</h2>
+                    <table>
+                        <tr>
+                            <td>{{ category_form.name(style="") }}</td>
+                            <td>{{ category_form.submit() }}</td>
+                        </tr>
+                    </table>
+                    {% for message in category_form.name.errors %}
+                        <small class="error">{{ message }}</small>
+                    {% endfor %}
+                </div>
+            </form>
+
+            <table class="table table-striped table-hover"> 
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Items</th>
+                    <th>Option</th>
+                </tr>
+                {% for c in category %}
+                <tr>
+                    <td>{{c.id}}</td>
+                    <td>{{c.name}}</td>
+                    <td>{{ c.messages | length }}</td>
+                    <td>
+                        <form action="{{url_for('delete_category', id=c.id)}}" method="POST">
+                            {{delete_form.delete(class="btn btn-outline-danger btn-sm")}}
+                        </form>
+                    </td>
+                    
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="col-sm-1 col-md-2"></div>
+    </div>
+</div>
+
+{% endblock %}

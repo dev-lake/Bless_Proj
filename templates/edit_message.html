@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<br>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-1 col-md-2"></div>
+        <div class="col-sm-10 col-md-8">
+            <form method="POST">
+                {{ form.csrf_token }}
+                <div class="form-group">
+                    <h2>Edit Bless</h2>
+                    <p>{{ form.body(style='height:300px') }}</p>
+                    {% for message in form.body.errors %}
+                        <small class="error">{{ message }}</small>
+                    {% endfor %}
+                    <p>{{ form.category(style="width:30%") }}</p>
+                </div>
+                {{ form.submit() }}
+            </form>
+        </div>
+        <div class="col-sm-1 col-md-2"></div>
+    </div>
+</div>
+
+{% endblock %}
