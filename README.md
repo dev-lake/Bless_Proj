@@ -1,3 +1,8 @@
+## Screenshot
+![](https://i.imgur.com/GMoQcGS.png)
+
+![](https://i.imgur.com/9BtNjaW.png)
+
 ## API
 
 ### Get Category
