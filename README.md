@@ -133,17 +133,20 @@ POST http://host/add_user?
 {
   "status": "created",
   "user": "openid_tianbybyvyv"
+  "id": 4
 }
 
 {
   "status": "updated",
   "user": "openid_tianbybyvyv"
+  "id": 4
 }
 
 # 失败
 {
   "message": "openid and nickname required.",
   "status": "fail"
+  "id": 4
 }
 ```
 
@@ -158,12 +161,27 @@ POST http://host/add_favourite
 - user_id
 - message_id
 
+### Delete  Favourates for User
+
+```
+POST http://host/delete_favourite
+```
+
+- user_id
+- message_id
+
 
 
 ### Get User Favourates
 
 ```
 GET http://host/get_user_collection/<user_id>
+```
+
+### Get user_id through open_id
+
+```
+GET http://host/get_user_id/<string:openid>
 ```
 
 

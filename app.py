@@ -213,9 +213,12 @@ def get_bless():
 
 ### Add User ###
 @app.route('/add_user', methods=['POST'])
+@csrf.exempt
 def add_user():
     data = request.get_json()
     print(data)
+    if data is None:
+        return jsonify(status='fail', message='Nothing Received.')
     if not data.get('openid') or not data.get('nickname'):
         return jsonify(status='fail', message='openid and nickname required.')
     user = User(
@@ -232,14 +235,15 @@ def add_user():
     if q:
         if user.openId == data.get('openid'):
             db.session.commit()
-            return jsonify(status='updated', user=data.get('openid'))
+            return jsonify(status='updated', user=data.get('openid'), id=q.id)
     db.session.add(user)
     db.session.commit()
-    return jsonify(status='created', user=data.get('openid'))
+    return jsonify(status='created', user=data.get('openid'), id=user.id)
 
 
 ### Add Favorate to User ###
 @app.route('/add_favourite', methods=['POST'])
+@csrf.exempt
 def add_favourite():
     data = request.get_json()
     print(data)
@@ -257,8 +261,28 @@ def add_favourite():
     db.session.commit()
     return jsonify(status='ok', user_id=u.id, message_id=m.id)
 
+### Delete Favorate to User ###
+@app.route('/delete_favourite', methods=['POST'])
+@csrf.exempt
+def delete_favourite():
+    data = request.get_json()
+    print(data)
+    if data is None:
+        return jsonify(status='fail', message='Nothing Received')
+    if not data.get('message_id') or not data.get('user_id'):
+        return jsonify(status='fail', message='Both message_id and user_id required')
+    u = User.query.get(int(data.get('user_id')))
+    m = Message.query.get(int(data.get('message_id')))
+    if u is None:
+        return jsonify(status='fail', message='User Not Exist.')
+    if m is None:
+        return jsonify(status='fail', message='Message Not Exist')
+    u.messages.remove(m)
+    db.session.commit()
+    return jsonify(status='ok', user_id=u.id, message_id=m.id)
 
-### Get Favourate of User ###
+
+### Get Favourate of User_id ###
 @app.route('/get_user_collection/<int:id>')
 def get_collection(id):
     if id is None:
@@ -270,4 +294,19 @@ def get_collection(id):
         status = 'ok',
         amount = u.favourates_amount(),
         favourate = u.favourates()
+    )
+
+
+### Get user_id through open_id ###
+@app.route('/get_user_id/<string:openid>')
+def get_user_id(openid):
+    if openid is None:
+        return jsonify(status='fail', message='User id Required.')
+    u = User.query.filter_by(openId=openid).first()
+    if u is None:
+        return jsonify(status='fail', message='No such a User.')
+    return jsonify(
+        status = 'ok',
+        id = u.id,
+        openid = u.openId
     )
