@@ -142,6 +142,25 @@ POST http://host/add_user?
 }
 ```
 
+  
+
+### Add Favourates to User
+
+```
+POST http://host/add_favourite
+```
+
+- user_id
+- message_id
+
+
+
+### Get User Favourates
+
+```
+GET http://host/get_user_collection/<user_id>
+```
+
 
 
 

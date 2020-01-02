@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, \
     jsonify, url_for, flash, request, abort
 from flask_sqlalchemy import SQLAlchemy, Pagination
+from flask_wtf.csrf import CSRFProtect
 from flask_basicauth import BasicAuth
 from flask_migrate import Migrate
 from config import Config
@@ -11,10 +12,12 @@ app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 basic_auth = BasicAuth(app)
+csrf = CSRFProtect(app)
 
 from models import Message, Category, User
 from forms import MessageForm, DeleteMessageForm,\
     CategoryForm, DeleteCategoryForm, DeleteForm
+
 
 @app.route('/', methods=["GET", "POST"])
 @basic_auth.required
@@ -29,7 +32,6 @@ def index():
     create_message_form.category.choices = [
         (c.id, c.name) for c in Category.query.all()
     ]
-    delete_message_form = DeleteMessageForm()
     if create_message_form.validate_on_submit():
         category = Category.query.get(create_message_form.category.data)
         if category == None:
@@ -47,7 +49,6 @@ def index():
         'index.html',
         title = "Manage",
         create_message_form = create_message_form,
-        delete_message_form = delete_message_form,
         pagination = pagination,
         prev_url = prev_url,
         next_url = next_url
@@ -83,7 +84,7 @@ def alter_post(id):
         db.session.commit()
         flash('Content Submit')
         return redirect(url_for('index'))
-    return render_template('edit_message.html', form=edit_form)
+    return render_template('edit_message.html', title='Edit Message', form=edit_form)
 
 
 @app.route('/category', methods=['GET', 'POST'])
@@ -91,7 +92,6 @@ def alter_post(id):
 def manage_category():
     category = Category.query.all()
     category_form = CategoryForm()
-    delete_form = DeleteForm()
     if category_form.validate_on_submit():
         data = category_form.name.data
         query = Category.query.filter_by(name=data).first()
@@ -101,12 +101,12 @@ def manage_category():
         c = Category(name=data)
         db.session.add(c)
         db.session.commit()
-
+        flash('Added.')
+        return redirect(url_for('manage_category'))
     return render_template(
         'manage_category.html',
         title = 'Manage Category',
         category_form = category_form,
-        delete_form = delete_form,
         category = category
     )
 
@@ -132,11 +132,10 @@ def manage_user():
     )
     prev_url = url_for('manage_user', page=pagination.prev_num)
     next_url = url_for('manage_user', page=pagination.next_num)
-    delete_form = DeleteForm()
     return render_template(
         'manage_user.html',
+        title = 'Manage User',
         pagination = pagination,
-        delete_form = delete_form
     )
 
 @app.route('/delete_user/<int:id>', methods=['POST'])
@@ -162,20 +161,10 @@ def logout():
 
 @app.route('/get_category')
 def get_category():
-    q = Category.query.all()
-    c = []
-    for i in q:
-        c.append(
-            {
-                'id': i.id, 
-                'name': i.name,
-                'items': i.message_amount()
-            }
-        )
     return jsonify(
         status = 'ok',
-        amount = len(c),
-        body = c
+        amount = Category.get_category_amount(),
+        body = Category.get_all_category()
     )
 
 
@@ -249,7 +238,36 @@ def add_user():
     return jsonify(status='created', user=data.get('openid'))
 
 
-
 ### Add Favorate to User ###
-### Get Favourate of User ###
+@app.route('/add_favourite', methods=['POST'])
+def add_favourite():
+    data = request.get_json()
+    print(data)
+    if data is None:
+        return jsonify(status='fail', message='Nothing Received')
+    if not data.get('message_id') or not data.get('user_id'):
+        return jsonify(status='fail', message='Both message_id and user_id required')
+    u = User.query.get(int(data.get('user_id')))
+    m = Message.query.get(int(data.get('message_id')))
+    if u is None:
+        return jsonify(status='fail', message='User Not Exist.')
+    if m is None:
+        return jsonify(status='fail', message='Message Not Exist')
+    u.messages.append(m)
+    db.session.commit()
+    return jsonify(status='ok', user_id=u.id, message_id=m.id)
 
+
+### Get Favourate of User ###
+@app.route('/get_user_collection/<int:id>')
+def get_collection(id):
+    if id is None:
+        return jsonify(status='fail', message='User id Required.')
+    u = User.query.get(id)
+    if u is None:
+        return jsonify(status='fail', message='No such a User.')
+    return jsonify(
+        status = 'ok',
+        amount = u.favourates_amount(),
+        favourate = u.favourates()
+    )

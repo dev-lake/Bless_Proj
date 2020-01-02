@@ -35,7 +35,9 @@
                     <td>{{ c.messages | length }}</td>
                     <td>
                         <form action="{{url_for('delete_category', id=c.id)}}" method="POST">
-                            {{delete_form.delete(class="btn btn-outline-danger btn-sm")}}
+                            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                            <input type="submit" value="Delete" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Delete the Item?')">
                         </form>
                     </td>
                     

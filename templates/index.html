@@ -40,8 +40,9 @@
                             </div>
                             <div align="left" style="float:left">
                                 <form method="POST" action="{{url_for('delete_post', id=word.id)}}">
-                                    {{ delete_message_form.csrf_token }}
-                                    {{ delete_message_form.delete(class="btn btn-outline-danger btn-sm") }}
+                                    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                                    <input type="submit" value="Delete" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Delete the Item?')">
                                 </form>
                             </div>
                         </p>
