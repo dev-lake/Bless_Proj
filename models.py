@@ -40,7 +40,7 @@ class Category(db.Model):
 class User(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    openId = db.Column(db.String(20),unique=True , nullable=False, index=True)
+    openId = db.Column(db.String(20), unique=True, nullable=False, index=True)
     nickname = db.Column(db.String(20), nullable=False)
     gender = db.Column(db.String(10))
     city = db.Column(db.String(20))
